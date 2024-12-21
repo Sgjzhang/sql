@@ -55,7 +55,8 @@ The store wants to keep customer addresses. Propose two architectures for the CU
 
 ```
 Your answer...
-```
+Type 1 will overwrite.
+Type 2 will retain changes.
 
 ***
 
