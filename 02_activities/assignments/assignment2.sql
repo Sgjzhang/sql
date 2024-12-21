@@ -200,31 +200,17 @@ When you have all of these components, you can run the update statement. */
 ALTER TABLE product_units
 ADD current_quantity INT;
 
-WITH updated_vendor_inventory AS(
-	SELECT *
-	FROM
-	(
-		SELECT quantity,product_id
-		,RANK() OVER(PARTITION BY product_id ORDER BY market_date DESC) as most_recent_quantity
-		FROM vendor_inventory 
-		) as n
-	WHERE n.most_recent_quantity = 1
-),
-updated_vendor_inventory_with_all_productes AS(
-	SELECT p.product_id,COALESCE(m.quantity,0) as quantity
-	FROM product as p
-	LEFT JOIN updated_vendor_inventory as m
-		ON p.product_id = m.product_id
-)
-SELECT * FROM updated_vendor_inventory_with_all_productes;
-
-UPDATE product_units as pu
+UPDATE product_units
 SET current_quantity =(
-	SELECT uvi.quantity
-	FROM updated_vendor_inventory_with_all_productes as uvi
-	WHERE uvi.product_id = pu.product_id
+	SELECT quantity
+	FROM vendor_inventory
+	WHERE vendor_inventory.product_id = product_units.product_id
+	ORDER BY market_date DESC
 	LIMIT 1
 )
+
+UPDATE product_units
+SET current_quantity =IFNULL(current_quantity,0)
 
 
 
